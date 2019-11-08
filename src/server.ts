@@ -29,7 +29,7 @@ export class ProxyServer extends EventEmitter {
         super();
     }
 
-    public async run(serverPort: number, simUDID: string): Promise<number> {
+    public async run(serverPort: number, simUDID?: string): Promise<number> {
         this._serverPort = serverPort;
         this._clients = new Map<ws, string>();
         debug('server.run, port=%s', serverPort)
