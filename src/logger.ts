@@ -4,7 +4,7 @@
 
 import * as createDebug from 'debug'
 
-class LoggerUtil {
+export class LoggerUtil {
 
     constructor() {
     }
