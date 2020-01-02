@@ -28,7 +28,7 @@ export class TestAdapter extends Adapter {
                 const targets: ITarget[] = [];
                 const rawTargets: ITarget[] = JSON.parse(data);
                 for (let i = 0; i < count; i++) {
-                    let t = (i < rawTargets.length ? rawTargets[i] : rawTargets[0]);
+                    const t = (i < rawTargets.length ? rawTargets[i] : rawTargets[0]);
                     targets.push(this.setTargetInfo(t));
                 }
 

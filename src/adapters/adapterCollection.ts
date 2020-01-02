@@ -90,7 +90,7 @@ export class AdapterCollection extends Adapter {
         }
     }
 
-    private getWebSocketId(url: string): { adapterId: string, targetId: string } {
+    private getWebSocketId(url: string): { adapterId: string; targetId: string } {
         debug(`adapterCollection.getWebSocketId, url=${url}`);
         const index = url.indexOf('/', 1);
         const adapterId = url.substr(0, index);

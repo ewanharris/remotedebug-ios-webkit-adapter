@@ -150,7 +150,7 @@ export class IOSAdapter extends AdapterCollection {
                     fs.statSync(proxy);
                     resolve(proxy);
                 } catch (err) {
-                    let message = `ios_webkit_debug_proxy.exe not found. Please install 'scoop install ios-webkit-debug-proxy'`;
+                    const message = `ios_webkit_debug_proxy.exe not found. Please install 'scoop install ios-webkit-debug-proxy'`;
                     reject(message);
                 }
             } else if (os.platform() === 'darwin' || os.platform() === 'linux') {

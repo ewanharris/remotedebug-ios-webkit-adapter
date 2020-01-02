@@ -93,7 +93,7 @@ suite('Proxy/Protocol/Target', () => {
             newToolSocket.on('connect', () => {
                 target.connectTo(targetUrl, newToolSocket);
 
-                let messages = ['test', 'test2'];
+                const messages = ['test', 'test2'];
                 let receivedCount = 0;
 
                 messages.forEach((i) => {

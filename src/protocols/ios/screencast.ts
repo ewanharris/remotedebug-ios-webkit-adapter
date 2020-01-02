@@ -8,7 +8,7 @@ export class ScreencastSession {
     private _target: Target;
     private _frameId: number;
     private _framesAcked: boolean[];
-    private _frameInterval: number = 250; // 60 fps is 16ms
+    private _frameInterval = 250; // 60 fps is 16ms
     private _format: string;
     private _quality: number;
     private _maxWidth: number;
@@ -34,7 +34,7 @@ export class ScreencastSession {
     }
 
     public start(): void {
-        this._framesAcked = new Array();
+        this._framesAcked = [];
         this._frameId = 1; // CDT seems to be 1 based and won't ack when 0
 
         this._target.callTarget('Runtime.evaluate', {

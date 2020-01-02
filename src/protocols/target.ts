@@ -16,7 +16,7 @@ export class Target extends EventEmitter {
     private _messageBuffer: string[];
     private _messageFilters: Map<string, ((msg: any) => Promise<any>)[]>;
     private _toolRequestMap: Map<number, string>;
-    private _adapterRequestMap: Map<number, { resolve: (any) => void, reject: (any) => void }>;
+    private _adapterRequestMap: Map<number, { resolve: (any) => void; reject: (any) => void }>;
     private _requestId: number;
     private _id: string;
     private _targetBased: boolean;
@@ -28,7 +28,7 @@ export class Target extends EventEmitter {
         this._messageBuffer = [];
         this._messageFilters = new Map<string, ((msg: any) => Promise<any>)[]>();
         this._toolRequestMap = new Map<number, string>();
-        this._adapterRequestMap = new Map<number, { resolve: (any) => void, reject: (any) => void }>();
+        this._adapterRequestMap = new Map<number, { resolve: (any) => void; reject: (any) => void }>();
         this._requestId = 0;
         this._targetBased = false;
         this._targetId = null;

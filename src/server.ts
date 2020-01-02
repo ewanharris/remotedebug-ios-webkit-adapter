@@ -77,7 +77,7 @@ export class ProxyServer extends EventEmitter {
     private startTargetFetcher(): void {
         debug('server.startTargetFetcher');
 
-        let fetch = () => {
+        const fetch = () => {
             this._adapter.getTargets().then((targets) => {
                 debug(`server.startTargetFetcher.fetched.${targets.length}`);
             }, (err) => {
@@ -150,7 +150,7 @@ export class ProxyServer extends EventEmitter {
 
         debug('server.ws.onWSSConnection', url);
 
-        let connection = <EventEmitter>websocket;
+        const connection = <EventEmitter>websocket;
 
         try {
             this._adapter.connectTo(url, websocket);

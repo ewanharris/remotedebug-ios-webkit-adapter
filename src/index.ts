@@ -6,7 +6,7 @@ import * as info from '../package.json';
 
 process.title = 'remotedebug-ios-webkit-adapter';
 
-let argv = optimist
+const argv = optimist
     .usage('Usage: $0 -p [num]')
     .alias('p', 'port').describe('p', 'the adapter listerning post').default('p', 9000)
     .describe('version', 'prints current version').boolean('boolean')

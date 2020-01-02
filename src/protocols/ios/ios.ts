@@ -7,8 +7,8 @@ import { Target } from '../target';
 import { Logger } from '../../logger';
 import { ScreencastSession } from './screencast';
 
-declare var document: any;
-declare var MouseEvent: any;
+declare let document: any;
+declare let MouseEvent: any;
 
 interface IRange {
     startLine: number;
@@ -23,9 +23,9 @@ interface IDisabledStyle {
 }
 
 export abstract class IOSProtocol extends ProtocolAdapter {
-    public static BEGIN_COMMENT: string = '/* ';
-    public static END_COMMENT: string = ' */';
-    public static SEPARATOR: string = ': ';
+    public static BEGIN_COMMENT = '/* ';
+    public static END_COMMENT = ' */';
+    public static SEPARATOR = ': ';
 
     protected _styleMap: Map<string, any>;
     protected _isEvaluating: boolean;
@@ -124,7 +124,7 @@ export abstract class IOSProtocol extends ProtocolAdapter {
 
                 const length = result.styleSheet.rules.length;
                 for (let ordinal = 0; ordinal < length; ordinal++) {
-                    let rule = result.styleSheet.rules[ordinal];
+                    const rule = result.styleSheet.rules[ordinal];
                     if (this.compareRanges(rule.style.range, edit.range)) {
                         const params = {
                             styleId: {
@@ -249,15 +249,15 @@ export abstract class IOSProtocol extends ProtocolAdapter {
 
         if (result) {
             // Convert all the rules into the chrome format
-            for (let i in result.matchedCSSRules) {
+            for (const i in result.matchedCSSRules) {
                 if (result.matchedCSSRules[i].rule) {
                     this.mapRule(result.matchedCSSRules[i].rule);
                 }
             }
 
-            for (let i in result.inherited) {
+            for (const i in result.inherited) {
                 if (result.inherited[i].matchedCSSRules) {
-                    for (let j in result.inherited[i].matchedCSSRules) {
+                    for (const j in result.inherited[i].matchedCSSRules) {
                         if (result.inherited[i].matchedCSSRules[j].rule) {
                             this.mapRule(result.inherited[i].matchedCSSRules[j].rule);
                         }
@@ -420,7 +420,7 @@ export abstract class IOSProtocol extends ProtocolAdapter {
 
         // Convert all the requests into individual calls to pushNodeByBackendIdToFrontend
         for (let i = 0; i < msg.params.backendNodeIds.length; i++) {
-            let params = {
+            const params = {
                 backendNodeId: msg.params.backendNodeIds[i]
             };
 
@@ -588,7 +588,7 @@ export abstract class IOSProtocol extends ProtocolAdapter {
     }
 
     private onConsoleMessageAdded(msg: any): Promise<any> {
-        let message = msg.params.message;
+        const message = msg.params.message;
         let type;
         if (message.type === 'log') {
             switch (message.level) {
@@ -624,7 +624,7 @@ export abstract class IOSProtocol extends ProtocolAdapter {
     protected enumerateStyleSheets(): void {
         this._target.callTarget('CSS.getAllStyleSheets', {}).then((msg) => {
             if (msg.headers) {
-                for (let header of msg.headers) {
+                for (const header of msg.headers) {
                     header.isInline = false;
                     header.startLine = 0;
                     header.startColumn = 0;
@@ -681,7 +681,7 @@ export abstract class IOSProtocol extends ProtocolAdapter {
             }
         }
 
-        for (let cssProperty of cssStyle.cssProperties) {
+        for (const cssProperty of cssStyle.cssProperties) {
             this.mapCssProperty(cssProperty);
         }
 
@@ -715,7 +715,7 @@ export abstract class IOSProtocol extends ProtocolAdapter {
      * Converts a given index to line and column, offset from a given range otherwise from 0.
      * @returns Line column converted from the given index and offset start range.
      */
-    private static getLineColumnFromIndex(text: string, index: number, startRange?: IRange): { line: number, column: number } {
+    private static getLineColumnFromIndex(text: string, index: number, startRange?: IRange): { line: number; column: number } {
         if (text === null || typeof text === 'undefined' || index < 0 || index > text.length) {
             return null;
         }
