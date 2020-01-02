@@ -11,7 +11,7 @@
     "prepublish": "gulp build",
     "watch": "gulp watch",
     "test": "gulp test",
-    "lint": "gulp lint"
+    "lint": "echo TODO"
   },
   "dependencies": {
     "child-process-promise": "^2.2.1",
@@ -35,7 +35,6 @@
     "mocha": "^6.2.0",
     "mock-socket": "^3.0.1",
     "mockery": "^2.1.0",
-    "tslint": "^5.19.0",
     "typemoq": "^2.1.0",
     "typescript": "^3.5.3"
   }
