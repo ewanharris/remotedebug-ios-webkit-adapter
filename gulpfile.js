@@ -6,13 +6,12 @@
 
 const gulp = require('gulp')
 const mocha = require('gulp-mocha')
-const sourcemaps = require('gulp-sourcemaps')
-const tslint = require('gulp-tslint')
+const gtslint = require('gulp-tslint')
 const ts = require('gulp-typescript')
-const log = require('gulp-util').log
-const typescript = require('typescript')
-const fs = require('fs')
-const path = require('path')
+const log = require('fancy-log')
+const tslint = require('tslint');
+
+const program = tslint.Linter.createProgram("./tsconfig.json", ".");
 
 const shellSources = [
   'src/**/*.ts',
@@ -49,13 +48,15 @@ gulp.task('build-tests', function () {
 })
 
 gulp.task('lint', function () {
-  console.log(lintSources)
   return gulp.src(lintSources)
-    .pipe(tslint({formatter: 'full'}))
-    .pipe(tslint.report('verbose'))
+    .pipe(gtslint({
+      formatter: 'verbose',
+      program: program
+    }))
+    // .pipe(gtslint.report())
 })
 
-gulp.task('test', ['build-tests'], function () {
+gulp.task('test', gulp.series('build-tests', function () {
   process.env.NODE_ENV = 'development'
   return gulp.src('out/test/**/*.test.js', { read: false })
     .pipe(mocha({ ui: 'tdd' }))
@@ -63,13 +64,13 @@ gulp.task('test', ['build-tests'], function () {
       log(e ? e.toString() : 'error in test task!')
       this.emit('end')
     })
-})
+}))
 
-gulp.task('watch-test', ['build-tests'], function () {
-  return gulp.watch(shellSources, ['build-tests'])
-})
+gulp.task('watch-test', gulp.series('build-tests', function () {
+  return gulp.watch(shellSources, gulp.task('test'))
+}))
 
-gulp.task('watch', ['build'], function () {
+gulp.task('watch', gulp.series('build', function () {
   const all = shellSources
-  gulp.watch(all, ['build'])
-})
+  gulp.watch(all, gulp.task('build'))
+}))

@@ -2,7 +2,7 @@
 // Copyright (C) Microsoft. All rights reserved.
 //
 
-import * as createDebug from 'debug'
+import * as createDebug from 'debug';
 
 export class LoggerUtil {
 
@@ -18,5 +18,5 @@ export class LoggerUtil {
     }
 }
 
-export const debug = createDebug('remotedebug')
+export const debug = createDebug('remotedebug');
 export const Logger = new LoggerUtil();

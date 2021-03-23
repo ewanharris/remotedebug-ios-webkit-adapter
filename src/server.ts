@@ -39,7 +39,7 @@ export class ProxyServer extends EventEmitter {
         this._wss = new WebSocketServer({
             server: this._hs
         });
-        this._wss.on('connection', (a) => this.onWSSConnection(a));
+        this._wss.on('connection', (a, req) => this.onWSSConnection(a, req));
         if (simUDID) {
             this._unixPort = await IOSAdapter.getSimulatorUnixSocket(simUDID)
         }
@@ -57,18 +57,16 @@ export class ProxyServer extends EventEmitter {
         });
 
         this._adapter = new IOSAdapter(`/ios`, `ws://localhost:${port}`, <IIOSProxySettings>settings);
-        
+
         return this._adapter.start().then(() => {
             this.startTargetFetcher();
         }).then(() => {
-            return port
-        })
-        
+            return port;
+        });
     }
 
     public stop(): void {
-
-        debug('server.stop')
+        debug('server.stop');
 
         if (this._hs) {
             this._hs.close();
@@ -80,33 +78,32 @@ export class ProxyServer extends EventEmitter {
     }
 
     private startTargetFetcher(): void {
+        debug('server.startTargetFetcher');
 
-        debug('server.startTargetFetcher')
-
-        var fetch = () => {
+        let fetch = () => {
             this._adapter.getTargets().then((targets) => {
-                debug(`server.startTargetFetcher.fetched.${targets.length}`)
+                debug(`server.startTargetFetcher.fetched.${targets.length}`);
             }, (err) => {
-                debug(`server.startTargetFetcher.error`, err``)
-            })
-        }
+                debug(`server.startTargetFetcher.error`, err``);
+            });
+        };
 
-        this._targetFetcherInterval = setInterval(fetch, 5000)
+        this._targetFetcherInterval = setInterval(fetch, 5000);
     }
 
     private stopTargetFetcher(): void {
-        debug('server.stopTargetFetcher')
+        debug('server.stopTargetFetcher');
         if (!this._targetFetcherInterval) {
-            return
+            return;
         }
-        clearInterval(this._targetFetcherInterval)
+        clearInterval(this._targetFetcherInterval);
     }
 
     private setupHttpHandlers(): void {
-        debug('server.setupHttpHandlers')
+        debug('server.setupHttpHandlers');
 
         this._es.get('/', (req, res) => {
-            debug('server.http.endpoint/')
+            debug('server.http.endpoint/');
             res.json({
                 msg: 'Hello from RemoteDebug iOS WebKit Adapter'
             });
@@ -121,21 +118,21 @@ export class ProxyServer extends EventEmitter {
         });
 
         this._es.get('/json', (req, res) => {
-            debug('server.http.endpoint/json')
+            debug('server.http.endpoint/json');
             this._adapter.getTargets().then((targets) => {
                 res.json(targets);
             });
         });
 
         this._es.get('/json/list', (req, res) => {
-            debug('server.http.endpoint/json/list')
+            debug('server.http.endpoint/json/list');
             this._adapter.getTargets().then((targets) => {
                 res.json(targets);
             });
         });
 
         this._es.get('/json/version', (req, res) => {
-            debug('server.http.endpoint/json/version')
+            debug('server.http.endpoint/json/version');
             res.json({
                 'Browser': 'Safari/RemoteDebug iOS Webkit Adapter',
                 'Protocol-Version': '1.2',
@@ -145,26 +142,23 @@ export class ProxyServer extends EventEmitter {
         });
 
         this._es.get('/json/protocol', (req, res) => {
-            debug('server.http.endpoint/json/protocol')
+            debug('server.http.endpoint/json/protocol');
             res.json();
         });
 
     }
 
-    private onWSSConnection(ws: ws): void {
-        const url = ws.upgradeReq.url;
+    private onWSSConnection(websocket: ws, req: http.IncomingMessage): void {
+        const url = req.url;
 
-        debug('server.ws.onWSSConnection', url)
+        debug('server.ws.onWSSConnection', url);
 
-        Logger.log(`New websocket connection to ${url}`);
-
-        let connection = <EventEmitter>ws;
+        let connection = <EventEmitter>websocket;
 
         try {
-            this._adapter.connectTo(url, ws);
-        }
-        catch (err) {
-            debug(`server.onWSSConnection.connectTo.error.${err}`)
+            this._adapter.connectTo(url, websocket);
+        } catch (err) {
+            debug(`server.onWSSConnection.connectTo.error.${err}`);
         }
 
         connection.on('message', (msg) => {

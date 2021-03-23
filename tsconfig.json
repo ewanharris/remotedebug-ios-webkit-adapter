@@ -1,15 +1,16 @@
 {
-    "compilerOptions": {
-        "module": "commonjs",
-        "target": "ES2016",
-        "types": [
-            "node"
-        ],
-        "sourceMap": true,
-        "declaration": true
-    },
-    "exclude": [
-        "src/**/*.json",
-        "node_modules"
-    ]
+  "compilerOptions": {
+      "module": "commonjs",
+      "target": "ES2016",
+      "types": [
+          "node"
+      ],
+      "sourceMap": true,
+      "declaration": true,
+      "resolveJsonModule": true
+  },
+  "exclude": [
+      "src/**/*.json",
+      "node_modules"
+  ]
 }
