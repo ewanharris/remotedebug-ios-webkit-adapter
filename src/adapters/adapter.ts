@@ -2,8 +2,7 @@
 // Copyright (C) Microsoft. All rights reserved.
 //
 
-import * as request from 'request';
-import * as http from 'http';
+import got from 'got';
 import * as WebSocket from 'ws';
 import { EventEmitter } from 'events';
 import { spawn, ChildProcess } from 'child_process';
@@ -72,24 +71,21 @@ export class Adapter extends EventEmitter {
         }
     }
 
-    public getTargets(metadata?: any): Promise<ITarget[]> {
+    public async getTargets(metadata?: any): Promise<ITarget[]> {
         debug(`adapter.getTargets, metadata=${metadata}`);
-        return new Promise((resolve, reject) => {
-            request(this._url, (error: any, response: http.IncomingMessage, body: any) => {
-                if (error) {
-                    resolve([]);
-                    return;
-                }
 
-                const targets: ITarget[] = [];
-                const rawTargets: ITarget[] = JSON.parse(body);
-                rawTargets.forEach((t: ITarget) => {
-                    targets.push(this.setTargetInfo(t, metadata));
-                });
+        const targets: ITarget[] = [];
+        try {
+            const { body } = await got(this._url);
+            const rawTargets: ITarget[] = JSON.parse(body);
+            for (const t of rawTargets) {
+                targets.push(this.setTargetInfo(t, metadata));
+            }
+        } catch (error) {
+            // nah
+        }
 
-                resolve(targets);
-            });
-        });
+        return targets;
     }
 
     public connectTo(targetId: string, wsFrom: WebSocket): Target {

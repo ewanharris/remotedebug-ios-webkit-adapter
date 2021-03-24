@@ -2,8 +2,7 @@
 // Copyright (C) Microsoft. All rights reserved.
 //
 
-import * as request from 'request';
-import * as http from 'http';
+import got from 'got';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
@@ -35,21 +34,14 @@ export class IOSAdapter extends AdapterCollection {
         this._protocolMap = new Map<Target, IOSProtocol>();
     }
 
-    public getTargets(): Promise<ITarget[]> {
+    public async getTargets(): Promise<ITarget[]> {
         debug(`iOSAdapter.getTargets`);
+        const devices: IIOSDeviceTarget[] = [];
+        try {
+            const { body } = await got(this._url);
+            const rawDevices: IIOSDeviceTarget[] = JSON.parse(body);
 
-        return new Promise((resolve) => {
-            request(this._url, (error: any, response: http.IncomingMessage, body: any) => {
-                if (error) {
-                    resolve([]);
-                    return;
-                }
-
-                const devices: IIOSDeviceTarget[] = JSON.parse(body);
-                resolve(devices);
-            });
-        }).then((devices: IIOSDeviceTarget[]) => {
-            devices.forEach(d => {
+            for (const d of rawDevices) {
                 if (d.deviceId === 'SIMULATOR') {
                     d.version = '9.3.0'; // TODO: Find a way to auto detect version. Currently hardcoding it.
                 } else if (d.deviceOSVersion) {
@@ -58,13 +50,8 @@ export class IOSAdapter extends AdapterCollection {
                     debug(`error.iosAdapter.getTargets.getDeviceVersion.failed.fallback, device=${d}. Please update ios-webkit-debug-proxy to version 1.8.5`);
                     d.version = '9.3.0';
                 }
-            });
-            return Promise.resolve(devices);
-        }).then((devices: IIOSDeviceTarget[]) => {
-            // Now start up all the adapters
-            devices.forEach(d => {
-                const adapterId = `${this._id}_${d.deviceId}`;
 
+                const adapterId = `${this._id}_${d.deviceId}`;
                 if (!this._adapters.has(adapterId)) {
                     const parts = d.url.split(':');
                     if (parts.length > 1) {
@@ -80,12 +67,13 @@ export class IOSAdapter extends AdapterCollection {
                         this._adapters.set(adapterId, adapter);
                     }
                 }
-            });
-            return Promise.resolve(devices);
-        }).then((devices: IIOSDeviceTarget[]) => {
-            // Now get the targets for each device adapter in our list
-            return super.getTargets(devices);
-        });
+                devices.push(d);
+            }
+        } catch (error) {
+            // todo
+        }
+
+        return super.getTargets(devices);
     }
 
     public connectTo(url: string, wsFrom: WebSocket): Target {
