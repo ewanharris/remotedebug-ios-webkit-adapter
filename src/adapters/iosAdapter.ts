@@ -190,7 +190,7 @@ export class IOSAdapter extends AdapterCollection {
                 return new IOS13Protocol(target);
             }
 
-            if (major > 12 || major >= 12 && minor >= 2) {
+            if (target.data.metadata.deviceId !== 'SIMULATOR' && major === 12 && minor === 2) {
                 return new IOS12Protocol(target);
             }
         }
