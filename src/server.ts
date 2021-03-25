@@ -29,7 +29,7 @@ export class ProxyServer extends EventEmitter {
         super();
     }
 
-    public async run(serverPort: number, simUDID?: string): Promise<number> {
+    public async run(serverPort: number, simUdid?: string): Promise<number> {
         this._serverPort = serverPort;
         this._clients = new Map<ws, string>();
         debug('server.run, port=%s', serverPort)
@@ -40,8 +40,8 @@ export class ProxyServer extends EventEmitter {
             server: this._hs
         });
         this._wss.on('connection', (a, req) => this.onWSSConnection(a, req));
-        if (simUDID) {
-            this._unixPort = await IOSAdapter.getSimulatorUnixSocket(simUDID)
+        if (simUdid) {
+            this._unixPort = await IOSAdapter.getSimulatorUnixSocket(simUdid);
         }
         this.setupHttpHandlers();
 
@@ -53,10 +53,11 @@ export class ProxyServer extends EventEmitter {
             proxyPath: null,
             proxyPort: (port + 100),
             proxyArgs: null,
-            unixPort: this._unixPort
+            unixPort: this._unixPort,
+            simUdid
         });
 
-        this._adapter = new IOSAdapter(`/ios`, `ws://localhost:${port}`, <IIOSProxySettings>settings);
+        this._adapter = new IOSAdapter(`/ios`, `ws://localhost:${port}`, settings);
 
         return this._adapter.start().then(() => {
             this.startTargetFetcher();

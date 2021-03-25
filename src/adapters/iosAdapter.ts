@@ -18,10 +18,12 @@ import { IOSProtocol } from '../protocols/ios/ios';
 import { IOS8Protocol } from '../protocols/ios/ios8';
 import { IOS9Protocol } from '../protocols/ios/ios9';
 import { IOS12Protocol } from '../protocols/ios/ios12';
+import { IOS13Protocol } from '../protocols/ios/ios13';
 
 export class IOSAdapter extends AdapterCollection {
     private _proxySettings: IIOSProxySettings;
     private _protocolMap: Map<Target, IOSProtocol>;
+    private _simulatorVersionMap: Map<string, string>;
 
     constructor(id: string, socket: string, proxySettings: IIOSProxySettings) {
         super(id, socket, {
@@ -32,6 +34,7 @@ export class IOSAdapter extends AdapterCollection {
 
         this._proxySettings = proxySettings;
         this._protocolMap = new Map<Target, IOSProtocol>();
+        this._simulatorVersionMap = new Map<string, string>();
     }
 
     public async getTargets(): Promise<ITarget[]> {
@@ -43,7 +46,8 @@ export class IOSAdapter extends AdapterCollection {
 
             for (const d of rawDevices) {
                 if (d.deviceId === 'SIMULATOR') {
-                    d.version = '9.3.0'; // TODO: Find a way to auto detect version. Currently hardcoding it.
+                    // iwdb doesn't report a sim udid so we use the one passed in by the user. This only works because we only support a single simulator, if multiple sims were supported then it wouldn't work
+                    d.version = await this.getSimulatorVersion(this._proxySettings.simUdid);
                 } else if (d.deviceOSVersion) {
                     d.version = d.deviceOSVersion;
                 } else {
@@ -91,7 +95,7 @@ export class IOSAdapter extends AdapterCollection {
         return target;
     }
 
-    public static async getProxySettings(args: any): Promise<IIOSProxySettings | string> {
+    public static async getProxySettings(args: IIOSProxySettings & { unixPort: string }): Promise<IIOSProxySettings> {
         debug(`iOSAdapter.getProxySettings`);
         let settings: IIOSProxySettings = null;
 
@@ -114,7 +118,8 @@ export class IOSAdapter extends AdapterCollection {
         settings = {
             proxyPath: proxyPath,
             proxyPort: proxyPort,
-            proxyArgs: proxyArgs
+            proxyArgs: proxyArgs,
+            simUdid: args.simUdid
         };
 
         return settings;
@@ -175,15 +180,61 @@ export class IOSAdapter extends AdapterCollection {
         const parts = version.split('.');
         if (parts.length > 0) {
             const major = parseInt(parts[0], 10);
+            const minor = parseInt(parts[1], 10);
+
             if (major <= 8) {
                 return new IOS8Protocol(target);
             }
-            const minor = parseInt(parts[1], 10);
+
+            if (major > 13 || major >= 13 && minor >= 4) {
+                return new IOS13Protocol(target);
+            }
+
             if (major > 12 || major >= 12 && minor >= 2) {
                 return new IOS12Protocol(target);
             }
         }
 
         return new IOS9Protocol(target);
+    }
+
+    private async getSimulatorVersion(udid: string): Promise<string> {
+
+        if (this._simulatorVersionMap.has(udid)) {
+            return this._simulatorVersionMap.get(udid);
+        }
+
+        let iosVersion;
+        try {
+            const { stdout } = await exec('xcrun simctl list --json');
+            const { devices, runtimes } = JSON.parse(stdout);
+            for (const [type, vals] of Object.entries(devices)) {
+                if (!type.includes('SimRuntime.iOS')) {
+                    continue;
+                }
+
+                if (!Array.isArray(vals)) {
+                    continue;
+                }
+
+                for (const val of vals) {
+                    if (val.udid === udid) {
+                        const runtime = runtimes.find(rt => rt.identifier === type);
+                        iosVersion = runtime.version;
+                        break;
+                    }
+                }
+
+                if (iosVersion ) {
+                    break;
+                }
+            }
+        } catch (error) {
+            iosVersion = '9.3.0';
+        }
+
+        this._simulatorVersionMap.set(udid, iosVersion);
+
+        return iosVersion;
     }
 }

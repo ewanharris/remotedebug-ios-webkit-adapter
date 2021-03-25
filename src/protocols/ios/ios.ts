@@ -337,7 +337,7 @@ export abstract class IOSProtocol extends ProtocolAdapter {
         return Promise.resolve(null);
     }
 
-    private onRuntimeGetProperties(msg: any): Promise<any> {
+    public onRuntimeGetProperties(msg: any): Promise<any> {
         const newPropertyDescriptors = [];
 
         for (let i = 0; i < msg.result.result.length; i++) {

@@ -37,4 +37,5 @@ export interface IIOSProxySettings {
     proxyPath: string;
     proxyPort: number;
     proxyArgs: string[];
+    simUdid: string;
 }
